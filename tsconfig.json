@@ -3,8 +3,6 @@
     "baseUrl": "./",
     // モジュールの参照先解決の指定
     "moduleResolution": "node",
-    // tsコンパイル結果格納先
-    "outDir": "./temp/js/entries/",
     // ソースマップを有効化
     "sourceMap": true,
     // TSはES2015に変換
@@ -12,9 +10,6 @@
     // 厳密モードとして設定
     "strict": true,
     // 型参照先の設定
-    "paths": {
-      
-    },
     "typeRoots": [
       "src/ts/@types",
       "node_modules/@types"

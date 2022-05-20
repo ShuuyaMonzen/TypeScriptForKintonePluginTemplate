@@ -20,22 +20,23 @@ fs.copySync(path.join(__dirname, 'src'), path.join(__dirname, 'temp'));
 fs.copyFileSync(path.join(__dirname, 'manifest.json'), path.join(__dirname, 'temp', 'manifest.json'));
 
 module.exports = {
-  mode: 'production',
+  mode: process.env.NODE_ENV,
   entry: entries,
   output: {
     filename: '[name]',
     path: path.join(__dirname, 'temp', 'js', 'entries')
   },
-  devtool: 'inline-source-map',
+  devtool: (process.env.NODE_ENV == 'development') ? 'inline-source-map' : undefined,
   target: 'node',
   module: {
     rules: [{ test: /\.(ts|js)x?$/, loader: 'babel-loader', exclude: /node_modules/ }],
   },
   resolve: {
     // 拡張子を配列で指定
-    extensions: ['.ts', '.tsx', '.js', '.json']
+    extensions: ['.ts', '.js',],
   },
   plugins: [
+    new webpack.EnvironmentPlugin(["NODE_ENV"]),
     new ForkTsCheckerWebpackPlugin(),
     new webpack.ProvidePlugin({
       $: 'jquery',
@@ -45,6 +46,32 @@ module.exports = {
       manifestJSONPath: path.join(__dirname, 'temp', 'manifest.json'),
       privateKeyPath: path.join(__dirname, 'key', 'jamnlebecigohjeafjiifdaiflakblde.ppk'),
       pluginZipPath: path.join(__dirname, 'dist', 'plugin.zip'),
-    })
-  ]
-}
+    }),
+  ],
+  optimization: 
+  //developmentの場合は圧縮,コメント削除しない
+  //productの場合は圧縮,コメント削除をする
+  (process.env.NODE_ENV == 'development') ? 
+  undefined :
+  {
+    minimize: true,
+    minimizer: [
+      (compiler) => {
+        const TerserPlugin = require('terser-webpack-plugin');
+        new TerserPlugin({
+          parallel: true,
+          terserOptions: {
+            //圧縮
+            compress: true,
+            output: {
+              //コメント削除
+              comments: false,
+              //難読化
+              beautify: false
+            }
+          }
+        }).apply(compiler);
+      },
+    ]
+  },
+};
