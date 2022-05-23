@@ -1,0 +1,2 @@
+# TypeScriptForKintonePluginTemplate
+KintoneのプラグインをTypeScriptで開発用のテンプレート
