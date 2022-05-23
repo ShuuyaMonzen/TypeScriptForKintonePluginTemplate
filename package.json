@@ -9,9 +9,8 @@
     "コメント(buildPro)": "リリース用ビルド",
     "buildPro": "cross-env NODE_ENV=\"production\" webpack"
   },
-  "keywords": [],
   "author": "MonzenShuuya",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ShuuyaMonzen/TypeScriptForKintonePluginTemplate/issues"
   },
