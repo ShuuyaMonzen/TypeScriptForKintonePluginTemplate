@@ -4,16 +4,17 @@ module.exports = function (api) {
         [
             "@babel/preset-env",
             {
-              "useBuiltIns": "entry",
-              "corejs": 3,
-            }
+                "useBuiltIns": "usage",
+                "corejs": 3,
+            },
         ],
-        "@babel/typescript"
+        "@babel/typescript",
     ];
     const plugins = [
-        [
-            "@babel/proposal-class-properties"
-        ]
+        ["@babel/plugin-proposal-decorators", {
+            legacy: true
+        }],
+        ["@babel/proposal-class-properties"]
     ];
     return {
         presets,

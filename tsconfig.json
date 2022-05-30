@@ -3,10 +3,12 @@
     "baseUrl": "./",
     // モジュールの参照先解決の指定
     "moduleResolution": "node",
+    "module": "commonjs",
+    // import 時にファイルの大文字小文字を区別する
+    "forceConsistentCasingInFileNames": true,
     // ソースマップを有効化
     "sourceMap": true,
-    // TSはES2015に変換
-    "target": "ES2015",
+    "target": "es5",
     // 厳密モードとして設定
     "strict": true,
     // 型参照先の設定
@@ -14,11 +16,19 @@
       "src/ts/@types",
       "node_modules/@types"
     ],
+    // tsファイルの起点パスを@に設定
+    "paths": {
+      "@/*": [
+          "src/ts/*"
+      ]
+    },
+    // DI用設定
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "compileOnSave": true,
   "include": [
-	  "src/ts"
+	  "src/ts",
   ],
-  "exclude": [
-  ]
+  "exclude": ["node_modules"]
 }
