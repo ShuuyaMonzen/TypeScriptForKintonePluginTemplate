@@ -18,6 +18,11 @@ glob.sync('**/*.ts', {
 
 fs.copySync(path.join(__dirname, 'src'), path.join(__dirname, 'temp'));
 fs.copyFileSync(path.join(__dirname, 'manifest.json'), path.join(__dirname, 'temp', 'manifest.json'));
+/**
+ * ppkファイル名取得(1件のみ取得の前提)
+ */
+var ppkFiles = fs.readdirSync('./key/');
+console.log("使用したppkファイル : " + ppkFiles[0]);
 
 module.exports = {
   mode: process.env.NODE_ENV,
@@ -49,7 +54,7 @@ module.exports = {
     }),
     new KintonePlugin({
       manifestJSONPath: path.join(__dirname, 'temp', 'manifest.json'),
-      privateKeyPath: path.join(__dirname, 'key', 'jamnlebecigohjeafjiifdaiflakblde.ppk'),
+      privateKeyPath: path.join(__dirname, 'key', ppkFiles[0]),
       pluginZipPath: path.join(__dirname, 'dist', 'plugin.zip'),
     }),
   ],
