@@ -2,7 +2,11 @@ const fs = require('fs-extra');
 const path = require('path');
 const glob = require("glob");
 const webpack = require('webpack');
+// 難読化モジュール
+const WebpackObfuscator = require('webpack-obfuscator');
+// ts型・構文チェックモジュール
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+// kintoneプラグイン作成用のwebpackプラグイン
 const KintonePlugin = require('@kintone/webpack-plugin-kintone-plugin');
 
 // ts→jsコンパイル後のものをbundle
@@ -22,66 +26,103 @@ fs.copyFileSync(path.join(__dirname, 'manifest.json'), path.join(__dirname, 'tem
  * ppkファイル名取得(1件のみ取得の前提)
  */
 var ppkFiles = fs.readdirSync('./key/');
-console.log("使用したppkファイル : " + ppkFiles[0]);
 
+//#region ローダールールのオブジェクトを作成する
+/**
+ * babelローダールール
+ */
+ var babelLoaderRule = { 
+  test: /\.ts$/,
+  exclude: /node_modules/,
+  use: [{
+    loader: 'babel-loader'
+  }]
+};
+
+/**
+ * 難読化モジュールローダールール
+ */
+var WebpackObfuscatorLoaderRule = {
+  test: /\.ts$/,
+  exclude: /node_modules/,
+  enforce: 'post',
+  use: [{
+      loader: WebpackObfuscator.loader,
+      options: {
+        compact: true,
+        identifierNamesGenerator: 'hexadecimal',
+        log: false,
+        numbersToExpressions: true,
+        renameGlobals: false,
+        selfDefending:true,
+        simplify: true,
+        splitStrings: true,
+        splitStringsChunkLength: 5,
+        stringArray: true,
+        stringArrayCallsTransform: true,
+        stringArrayEncoding: ['rc4'],
+        stringArrayIndexShift: true,
+        stringArrayRotate: true,
+        stringArrayShuffle: true,
+        stringArrayWrappersCount: 5,
+        stringArrayWrappersChainedCalls: true,    
+        stringArrayWrappersParametersMaxCount: 5,
+        stringArrayWrappersType: 'function',
+        stringArrayThreshold: 1,
+        transformObjectKeys: true,
+        unicodeEscapeSequence: false
+      }
+  }]
+};
+//#endregion
+
+//#region プラグインのオブジェクトを作成する
+/**
+ * 環境変数用プラグイン
+ */
+var environmentPlugin = new webpack.EnvironmentPlugin(["NODE_ENV", "APP_ENV"]);
+
+/**
+ * ts型・構文チェックプラグイン
+ */
+var forkTsCheckerWebpackPlugin = new ForkTsCheckerWebpackPlugin({
+  typescript: {
+    configFile: path.resolve(__dirname, "./tsconfig.json")
+  },
+  async: false,
+});
+
+/**
+ * kintoneプラグイン作成用のwebpackプラグイン
+ */
+var kintonePluginPackerWebPackPlugin = new KintonePlugin({
+  manifestJSONPath: path.join(__dirname, 'temp', 'manifest.json'),
+  privateKeyPath: path.join(__dirname, 'key', ppkFiles[0]),
+  pluginZipPath: path.join(__dirname, 'dist', 'plugin.zip'),
+});
+//#endregion
+
+console.log("使用したppkファイル : " + ppkFiles[0]);
 module.exports = {
   mode: process.env.NODE_ENV,
   entry: entries,
   output: {
     filename: '[name]',
-    path: path.join(__dirname, 'temp', 'js', 'entries')
+    path: path.join(__dirname, 'temp', 'js', 'entries'),
+    clean: true,
   },
   devtool: (process.env.NODE_ENV == 'development') ? 'inline-source-map' : undefined,
   target: 'node',
+  // 開発用ビルドでは難読化なし
+  // 検証・本番用ビルドでは難読化あり
   module: {
-    rules: [{ test: /\.(ts|js)x?$/, loader: 'babel-loader', exclude: /node_modules/ }],
+    rules: (process.env.NODE_ENV == 'development') ? 
+    [babelLoaderRule] :
+    [WebpackObfuscatorLoaderRule, babelLoaderRule],
   },
   resolve: {
     // 拡張子を配列で指定
     extensions: ['.ts', '.js',],
   },
-  plugins: [
-    new webpack.EnvironmentPlugin(["NODE_ENV"]),
-    new ForkTsCheckerWebpackPlugin({
-      typescript: {
-        configFile: path.resolve(__dirname, "./tsconfig.json")
-      },
-      async: false,
-    }),
-    new webpack.ProvidePlugin({
-      $: 'jquery',
-      jQuery: 'jquery'
-    }),
-    new KintonePlugin({
-      manifestJSONPath: path.join(__dirname, 'temp', 'manifest.json'),
-      privateKeyPath: path.join(__dirname, 'key', ppkFiles[0]),
-      pluginZipPath: path.join(__dirname, 'dist', 'plugin.zip'),
-    }),
-  ],
-  optimization: 
-  //developmentの場合は圧縮,コメント削除しない
-  //productの場合は圧縮,コメント削除をする
-  (process.env.NODE_ENV == 'development') ? 
-  undefined :
-  {
-    minimize: true,
-    minimizer: [
-      (compiler) => {
-        const TerserPlugin = require('terser-webpack-plugin');
-        new TerserPlugin({
-          parallel: true,
-          terserOptions: {
-            //圧縮
-            compress: true,
-            output: {
-              //コメント削除
-              comments: false,
-              //難読化
-              beautify: false
-            }
-          }
-        }).apply(compiler);
-      },
-    ]
-  },
+  plugins: [forkTsCheckerWebpackPlugin, kintonePluginPackerWebPackPlugin]
 };

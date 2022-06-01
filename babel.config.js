@@ -14,7 +14,13 @@ module.exports = function (api) {
         ["@babel/plugin-proposal-decorators", {
             legacy: true
         }],
-        ["@babel/proposal-class-properties"]
+        ["@babel/proposal-class-properties"],
+        ["transform-inline-environment-variables", {
+            "include": [
+              "NODE_ENV",
+              "APP_ENV"
+            ]
+        }]
     ];
     return {
         presets,

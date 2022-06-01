@@ -1,18 +1,14 @@
-const { NODE_ENV } = process.env;
+const APP_ENV = process.env.APP_ENV;
 import { Container } from 'inversify';
 import TYPES from './inversify.types';
 
 const container = new Container();
-if (NODE_ENV === 'development') {
-    /*container
-        .bind<IKintoneEnviroment>(TYPES.IKintoneEnviroment)
-        .to(KintoneEnviromentDev)
-        .inSingletonScope();*/
-} else if (NODE_ENV === 'production') {
-    /*container
-        .bind<IKintoneEnviroment>(TYPES.IKintoneEnviroment)
-        .to(IKintoneEnviromentPro)
-        .inSingletonScope();*/
+if (APP_ENV === 'development') {
+    
+} else if (APP_ENV === 'staging') {
+
+} else if (APP_ENV === 'production') {
+
 }
 
 export default container;

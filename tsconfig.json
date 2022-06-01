@@ -16,15 +16,11 @@
       "src/ts/@types",
       "node_modules/@types"
     ],
-    // tsファイルの起点パスを@に設定
-    "paths": {
-      "@/*": [
-          "src/ts/*"
-      ]
-    },
     // DI用設定
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
   "compileOnSave": true,
   "include": [

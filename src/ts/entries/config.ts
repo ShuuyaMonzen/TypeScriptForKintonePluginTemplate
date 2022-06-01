@@ -1,21 +1,35 @@
-/// <reference path="../../../node_modules/kypes/namespaces/index.ts" />
+const APP_ENV = process.env.APP_ENV;
+import * as $ from 'jquery';
 
-(() =>{
-    class appConfig {
-        public name: string;
-        constructor(name: string) {
-            this.name = name;
-            console.log(moment().toDate() + " " + this.name);
-            console.log($("body"));
-        }
-    }
+((PLUGIN_ID) => {
+  'use strict';
 
-    const appConfigValue = new appConfig('アプリ1');
+  console.log(APP_ENV);
+  console.log("aaa");
 
-    kintone.events.on("app.record.create.submit", (event)=>{
-        if(event.record["a"]){
-            event.record["a"].value = "125";
-        }
+  var $form = $('.js-submit-settings');
+  var $cancelButton = $('.js-cancel-button');
+  var $message = $('.js-text-message');
+  if (!($form.length > 0 && $cancelButton.length > 0 && $message.length > 0)) {
+    throw new Error('Required elements do not exist.');
+  }
+  var config = kintone.plugin.app.getConfig(PLUGIN_ID);
+
+  if (config.message) {
+    $message.val(config.message);
+  }
+  $form.on('submit', function(e) {
+    e.preventDefault();
+    type PluginConfig = Record<string, string>;
+    var config : PluginConfig = {message : $message.val() as string};
+    kintone.plugin.app.setConfig(config, function() {
+      alert('The plug-in settings have been saved. Please update the app!');
+      window.location.href = '../../flow?app=' + kintone.app.getId();
     });
-})();
+  });
+  $cancelButton.on('click', function() {
+    window.location.href = '../../' + kintone.app.getId() + '/plugin/';
+  });
+})(kintone.$PLUGIN_ID);
+
 
