@@ -1,6 +1,6 @@
 const APP_ENV = process.env.APP_ENV;
 import { Container } from 'inversify';
-import TYPES from './inversify.types';
+import TYPES from '@/diContainer/inversify.types';
 
 const container = new Container();
 if (APP_ENV === 'development') {

@@ -35,7 +35,34 @@ var ppkFiles = fs.readdirSync('./key/');
   test: /\.ts$/,
   exclude: /node_modules/,
   use: [{
-    loader: 'babel-loader'
+    loader: 'babel-loader',
+    
+    options: {
+      presets: [
+        [
+          "@babel/preset-env",
+          {
+            "useBuiltIns": "usage",
+            "corejs": 3,
+          },
+        ],
+        "@babel/typescript",
+      ],
+      plugins: [
+        ["@babel/plugin-proposal-decorators", {
+          legacy: true
+        }],
+        ["@babel/proposal-class-properties"],
+
+        // NODE_ENV, APP_ENVの変数を'development'などのビルドオプション文字列に置換
+        ["transform-inline-environment-variables", {
+          "include": [
+            "NODE_ENV",
+            "APP_ENV"
+          ]
+        }]
+      ]
+    }
   }]
 };
 
@@ -77,11 +104,6 @@ var WebpackObfuscatorLoaderRule = {
 //#endregion
 
 //#region プラグインのオブジェクトを作成する
-/**
- * 環境変数用プラグイン
- */
-var environmentPlugin = new webpack.EnvironmentPlugin(["NODE_ENV", "APP_ENV"]);
-
 /**
  * ts型・構文チェックプラグイン
  */
