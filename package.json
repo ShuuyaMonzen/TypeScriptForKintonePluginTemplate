@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "コメント(buildDevWatch) : 開発用継続ビルド": "",
+    "buildDevWatch": "cross-env NODE_ENV=\"development\" APP_ENV=\"development\" webpack --watch",
     "コメント(buildDev) : 開発用ビルド": "",
     "buildDev": "cross-env NODE_ENV=\"development\" APP_ENV=\"development\" webpack",
     "コメント(buildStg) : 検証用ビルド": "",
@@ -29,8 +31,6 @@
     "@kintone/plugin-packer": "^6.0.0",
     "@kintone/plugin-uploader": "^7.0.0",
     "@kintone/webpack-plugin-kintone-plugin": "^6.0.0",
-    "@types/jquery": "^3.5.14",
-    "@types/moment": "^2.13.0",
     "babel-loader": "^8.2.5",
     "babel-plugin-transform-inline-environment-variables": "^0.4.4",
     "cross-env": "^7.0.3",
@@ -47,8 +47,6 @@
     "webpack-obfuscator": "^3.5.1"
   },
   "dependencies": {
-    "@kintone/rest-api-client": "^3.0.0",
-    "jquery": "^3.6.0",
-    "moment": "^2.29.3"
+    "@kintone/rest-api-client": "^3.0.0"
   }
 }

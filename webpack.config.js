@@ -9,9 +9,10 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 // kintoneプラグイン作成用のwebpackプラグイン
 const KintonePlugin = require('@kintone/webpack-plugin-kintone-plugin');
 
+//#region バンドル対象を取得する
 // ts→jsコンパイル後のものをbundle
 const entries = {};
-const srcDir = path.join(__dirname, 'src', 'ts', 'entries');
+const srcDir = path.resolve(__dirname, 'src', 'ts', 'entries');
 glob.sync('**/*.ts', {
   ignore: '**/_*.ts',
   cwd: srcDir
@@ -20,12 +21,16 @@ glob.sync('**/*.ts', {
   entries[fileName + '.js'] = path.resolve(srcDir, value);
 });
 
-fs.copySync(path.join(__dirname, 'src'), path.join(__dirname, 'temp'));
-fs.copyFileSync(path.join(__dirname, 'manifest.json'), path.join(__dirname, 'temp', 'manifest.json'));
+fs.copySync(path.resolve(__dirname, 'src'), path.resolve(__dirname, 'temp'));
+fs.copyFileSync(path.resolve(__dirname, 'manifest.json'), path.resolve(__dirname, 'temp', 'manifest.json'));
+//#endregion
+
+//#region ppkファイル取得
 /**
  * ppkファイル名取得(1件のみ取得の前提)
  */
-var ppkFiles = fs.readdirSync('./key/');
+ var ppkFiles = fs.readdirSync(path.resolve(__dirname, 'key', process.env.APP_ENV));
+//#endregion
 
 //#region ローダールールのオブジェクトを作成する
 /**
@@ -103,7 +108,7 @@ var WebpackObfuscatorLoaderRule = {
 };
 //#endregion
 
-//#region プラグインのオブジェクトを作成する
+//#region webpackプラグインのオブジェクトを作成する
 /**
  * ts型・構文チェックプラグイン
  */
@@ -118,9 +123,9 @@ var forkTsCheckerWebpackPlugin = new ForkTsCheckerWebpackPlugin({
  * kintoneプラグイン作成用のwebpackプラグイン
  */
 var kintonePluginPackerWebPackPlugin = new KintonePlugin({
-  manifestJSONPath: path.join(__dirname, 'temp', 'manifest.json'),
-  privateKeyPath: path.join(__dirname, 'key', ppkFiles[0]),
-  pluginZipPath: path.join(__dirname, 'dist', 'plugin.zip'),
+  manifestJSONPath: path.resolve(__dirname, 'temp', 'manifest.json'),
+  privateKeyPath: path.resolve(__dirname, 'key', process.env.APP_ENV, ppkFiles[0]),
+  pluginZipPath: path.resolve(__dirname, 'dist', 'plugin.zip'),
 });
 //#endregion
 
@@ -130,11 +135,13 @@ module.exports = {
   entry: entries,
   output: {
     filename: '[name]',
-    path: path.join(__dirname, 'temp', 'js', 'entries'),
+    // tempフォルダにts→jsにトランスパイル結果を出力
+    path: path.resolve(__dirname, 'temp', 'js', 'entries'),
     clean: true,
   },
   devtool: (process.env.NODE_ENV == 'development') ? 'inline-source-map' : undefined,
-  target: 'node',
+  // node,web共通のモジュールの場合はexports.browserのエントリポイントを使用
+  target: 'web',
   // 開発用ビルドでは難読化なし
   // 検証・本番用ビルドでは難読化あり
   module: {
@@ -145,6 +152,9 @@ module.exports = {
   resolve: {
     // 拡張子を配列で指定
     extensions: ['.ts', '.js',],
+    // ビルド時のパスを解決
+    // @ → src/tsに置換 
+    alias: { '@': path.resolve(__dirname, 'src/ts'), },
   },
   plugins: [forkTsCheckerWebpackPlugin, kintonePluginPackerWebPackPlugin]
 };
